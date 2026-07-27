@@ -1,1 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Suite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f2f2f2;
+    }
+    .carte {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      background-color: white;
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      text-align: left;
+      width: 320px;
+    }
+    .carte h1 {
+      margin-top: 0;
+      margin-bottom: 25px;
+      font-size: 22px;
+      text-align: center;
+      width: 100%;
+    }
+    .case {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .case input {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+    }
+    .bouton {
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #e63946;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+    }
+    .bouton:hover {
+      background-color: #c1121f;
+    }
+    .confirmation {
+      font-size: 14px;
+      color: #2a9d8f;
+      margin-top: 10px;
+      min-height: 18px;
+      text-align: center;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="carte">
+    <h1>Ton texte ici</h1>
 
+    <label class="case">
+      <input type="checkbox" id="case1"> Option 1
+    </label>
+    <label class="case">
+      <input type="checkbox" id="case2"> Option 2
+    </label>
+    <label class="case">
+      <input type="checkbox" id="case3"> Option 3
+    </label>
+
+    <button class="bouton" onclick="envoyerReponses()">Envoyer</button>
+    <p class="confirmation" id="confirmation"></p>
+  </div>
+
+  <script>
+    const webhookURL = "https://discord.com/api/webhooks/1531118624469815451/MRt4Q1nc97vGlwnvstobqkV1lq6v0eFR9VP8wcr3zI6BaVI1ZgXssF2ePwPxkvBTDj4_";
+
+    function envoyerReponses() {
+      const c1 = document.getElementById("case1").checked ? "✅ Option 1" : "❌ Option 1";
+      const c2 = document.getElementById("case2").checked ? "✅ Option 2" : "❌ Option 2";
+      const c3 = document.getElementById("case3").checked ? "✅ Option 3" : "❌ Option 3";
+
+      const message = "Réponses reçues :\n" + c1 + "\n" + c2 + "\n" + c3;
+
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: message })
+      });
+
+      document.getElementById("confirmation").innerText = "Merci, tes réponses ont bien été envoyées !";
+    }
+  </script>
+</body>
+</html>
