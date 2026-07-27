@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Le choix</title>
+  <title>Contact</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -42,7 +42,7 @@
       border-radius: 8px;
       display: block;
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       font-family: 'Poppins', sans-serif;
       cursor: pointer;
     }
@@ -51,38 +51,36 @@
       background-color: #c1121f;
     }
 
-    .reponse {
+    .confirmation {
       font-size: 14px;
-      color: #333;
-      margin-top: -3px;
-      margin-bottom: 15px;
+      color: #2a9d8f;
+      margin-top: 5px;
       min-height: 18px;
     }
   </style>
 </head>
 <body>
   <div class="carte">
-    <h1>Page contact</h1>
+    <h1>Fais ton choix</h1>
 
-    <button class="bouton" onclick="afficherReponse(1)">Bouton 1</button>
-    <p class="reponse" id="reponse1"></p>
+    <button class="bouton" onclick="envoyerChoix('Bouton 1')">Bouton 1</button>
+    <button class="bouton" onclick="envoyerChoix('Bouton 2')">Bouton 2</button>
+    <button class="bouton" onclick="envoyerChoix('Bouton 3')">Bouton 3</button>
 
-    <button class="bouton" onclick="afficherReponse(2)">Bouton 2</button>
-    <p class="reponse" id="reponse2"></p>
-
-    <button class="bouton" onclick="afficherReponse(3)">Bouton 3</button>
-    <p class="reponse" id="reponse3"></p>
+    <p class="confirmation" id="confirmation"></p>
   </div>
 
   <script>
-    const reponses = {
-      1: "Réponse pour le bouton 1",
-      2: "Réponse pour le bouton 2",
-      3: "Réponse pour le bouton 3"
-    };
+    const webhookURL = "https://discord.com/api/webhooks/1531118624469815451/MRt4Q1nc97vGlwnvstobqkV1lq6v0eFR9VP8wcr3zI6BaVI1ZgXssF2ePwPxkvBTDj4_";
 
-    function afficherReponse(num) {
-      document.getElementById("reponse" + num).innerText = reponses[num];
+    function envoyerChoix(choix) {
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: "Un visiteur a choisi : " + choix })
+      });
+
+      document.getElementById("confirmation").innerText = "Merci, ton choix a bien été envoyé !";
     }
   </script>
 </body>
