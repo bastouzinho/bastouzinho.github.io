@@ -71,37 +71,30 @@
 <body>
   <div class="carte">
     <h1>Tu trouves mon concept</h1>
-
     <label class="case">
-      <input type="checkbox" id="Cool"> Cool
+      <input type="checkbox" id="case1"> Cool
     </label>
     <label class="case">
-      <input type="checkbox" id="Tres cool"> Tres cool 
+      <input type="checkbox" id="case2"> Tres cool
     </label>
     <label class="case">
-      <input type="checkbox" id="Nul a chier mais vrm bcp trop trop trop (je suis juste une hateuse car t es un genie de faire ca pour moi )"> Nul a chier mais vrm bcp trop trop trop (je suis juste une hateuse car t es un genie de faire ca pour moi )
+      <input type="checkbox" id="case3"> Nul a chier mais vrm bcp trop trop trop (je suis juste une hateuse car t es un genie de faire ca pour moi )
     </label>
-
     <button class="bouton" onclick="envoyerReponses()">Envoyer</button>
     <p class="confirmation" id="confirmation"></p>
   </div>
-
   <script>
     const webhookURL = "https://discord.com/api/webhooks/1531118624469815451/MRt4Q1nc97vGlwnvstobqkV1lq6v0eFR9VP8wcr3zI6BaVI1ZgXssF2ePwPxkvBTDj4_";
-
     function envoyerReponses() {
-      const c1 = document.getElementById("case1").checked ? "✅ Option 1" : "❌ Option 1";
-      const c2 = document.getElementById("case2").checked ? "✅ Option 2" : "❌ Option 2";
-      const c3 = document.getElementById("case3").checked ? "✅ Option 3" : "❌ Option 3";
-
+      const c1 = document.getElementById("case1").checked ? "✅ Cool" : "❌ Cool";
+      const c2 = document.getElementById("case2").checked ? "✅ Tres cool" : "❌ Tres cool";
+      const c3 = document.getElementById("case3").checked ? "✅ Nul a chier (mais elle t'adore en vrai)" : "❌ Nul a chier (mais elle t'adore en vrai)";
       const message = "Réponses reçues :\n" + c1 + "\n" + c2 + "\n" + c3;
-
       fetch(webhookURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: message })
       });
-
       document.getElementById("confirmation").innerText = "Merci, tes réponses ont bien été envoyées !";
     }
   </script>
