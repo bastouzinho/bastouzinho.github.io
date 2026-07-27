@@ -79,6 +79,19 @@
       cursor: pointer;
       font-family: 'Poppins', sans-serif;
     }
+    #passer {
+      display: none;
+      margin-top: 10px;
+      margin-left: 8px;
+      padding: 10px 20px;
+      font-size: 15px;
+      background-color: #777;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
     p.astuce {
       font-size: 13px;
       color: #777;
@@ -107,6 +120,7 @@
 
     <p id="messageFin"></p>
     <button id="rejouer">Rejouer</button>
+    <button id="passer">Passer</button>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -158,6 +172,7 @@
       document.getElementById("score").innerText = "Score : 0";
       document.getElementById("messageFin").innerText = "";
       document.getElementById("rejouer").style.display = "none";
+      document.getElementById("passer").style.display = "none";
       placerPomme();
       if (intervalJeu) clearInterval(intervalJeu);
       intervalJeu = setInterval(boucle, 150);
@@ -266,6 +281,7 @@
       clearInterval(intervalJeu);
       document.getElementById("messageFin").innerText = "Perdu ! Score final : " + score;
       document.getElementById("rejouer").style.display = "inline-block";
+      document.getElementById("passer").style.display = "inline-block";
     }
 
     function changerDirection(nouvelleDirection) {
@@ -281,6 +297,16 @@
     document.getElementById("gauche").addEventListener("click", () => changerDirection("gauche"));
     document.getElementById("droite").addEventListener("click", () => changerDirection("droite"));
     document.getElementById("rejouer").addEventListener("click", initJeu);
+
+    document.getElementById("passer").addEventListener("click", function() {
+      for (let x = 0; x < cases; x++) {
+        for (let y = 0; y < cases; y++) {
+          casesRevelees.add(x + "," + y);
+        }
+      }
+      document.getElementById("passer").style.display = "none";
+      dessiner();
+    });
 
     document.addEventListener("keydown", function(e) {
       if (e.key === "ArrowUp") changerDirection("haut");
