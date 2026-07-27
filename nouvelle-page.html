@@ -106,7 +106,7 @@
     <p id="score">0 / 17 allumées</p>
     <p class="astuce">Fais glisser ton doigt vers le haut sur l'écran pour lancer du feu</p>
 
-    <canvas id="jeu" width="340" height="480"></canvas>
+    <canvas id="jeu" width="360" height="480"></canvas>
 
     <p id="messageFin"></p>
     <button id="rejouer">Rejouer</button>
@@ -137,15 +137,29 @@
     const canvas = document.getElementById("jeu");
     const ctx = canvas.getContext("2d");
 
-    // ----- Position des 17 bougies sur le gâteau -----
+    // ----- Position des 17 bougies sur le gateau, sur 2 rangees en quinconce -----
     const nbBougies = 17;
     const bougies = [];
-    const margeX = 55;
-    const largeurZone = canvas.width - margeX * 2;
-    for (let i = 0; i < nbBougies; i++) {
+    const centreX = canvas.width / 2;
+
+    // Rangee arriere (plus haute, un peu plus resserree) : 8 bougies
+    const arriere = 8;
+    const largeurArriere = 190;
+    for (let i = 0; i < arriere; i++) {
       bougies.push({
-        x: margeX + (largeurZone / (nbBougies - 1)) * i,
-        y: 150 + Math.sin(i * 0.9) * 8,
+        x: centreX - largeurArriere / 2 + (largeurArriere / (arriere - 1)) * i,
+        y: 172,
+        allumee: false
+      });
+    }
+
+    // Rangee avant (plus basse, plus large) : 9 bougies
+    const avant = nbBougies - arriere;
+    const largeurAvant = 210;
+    for (let i = 0; i < avant; i++) {
+      bougies.push({
+        x: centreX - largeurAvant / 2 + (largeurAvant / (avant - 1)) * i,
+        y: 190,
         allumee: false
       });
     }
@@ -201,7 +215,6 @@
       debutSwipe = null;
     });
 
-    // Souris pour tester sur ordinateur
     let sourisDebut = null;
     canvas.addEventListener("mousedown", function(e) {
       lancerMusique();
@@ -239,54 +252,52 @@
       // Assiette
       ctx.fillStyle = "#e8d5f0";
       ctx.beginPath();
-      ctx.ellipse(canvas.width / 2, 250, 130, 14, 0, 0, Math.PI * 2);
+      ctx.ellipse(canvas.width / 2, 270, 150, 15, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // Etage du bas
       ctx.fillStyle = "#c97b4a";
-      ctx.fillRect(canvas.width / 2 - 110, 210, 220, 45);
+      ctx.fillRect(canvas.width / 2 - 130, 225, 260, 48);
 
       // Etage du milieu
       ctx.fillStyle = "#e0995f";
-      ctx.fillRect(canvas.width / 2 - 85, 180, 170, 40);
+      ctx.fillRect(canvas.width / 2 - 100, 195, 200, 42);
 
       // Nappage blanc ondule en haut
       ctx.fillStyle = "#fff5f8";
       ctx.beginPath();
-      ctx.moveTo(canvas.width / 2 - 90, 180);
-      for (let x = -90; x <= 90; x += 15) {
+      ctx.moveTo(centreX - 105, 195);
+      for (let x = -105; x <= 105; x += 15) {
         ctx.quadraticCurveTo(
-          canvas.width / 2 + x + 7.5, 170,
-          canvas.width / 2 + x + 15, 180
+          centreX + x + 7.5, 184,
+          centreX + x + 15, 195
         );
       }
-      ctx.lineTo(canvas.width / 2 + 90, 195);
-      ctx.lineTo(canvas.width / 2 - 90, 195);
+      ctx.lineTo(centreX + 105, 210);
+      ctx.lineTo(centreX - 105, 210);
       ctx.closePath();
       ctx.fill();
 
-      // Petites decorations
+      // Petites decorations sur l'etage du bas
       ctx.fillStyle = "#f78fb3";
-      for (let i = -95; i <= 95; i += 20) {
+      for (let i = -110; i <= 110; i += 20) {
         ctx.beginPath();
-        ctx.arc(canvas.width / 2 + i, 225, 4, 0, Math.PI * 2);
+        ctx.arc(centreX + i, 240, 4, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
     function dessinerBougie(b) {
-      // Baton de bougie
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(b.x - 2.5, b.y, 5, 25);
+      ctx.fillRect(b.x - 2.5, b.y, 5, 22);
       ctx.strokeStyle = "#f78fb3";
       ctx.lineWidth = 1.5;
       for (let i = 0; i < 3; i++) {
         ctx.beginPath();
-        ctx.moveTo(b.x - 2.5, b.y + 5 + i * 8);
-        ctx.lineTo(b.x + 2.5, b.y + 5 + i * 8);
+        ctx.moveTo(b.x - 2.5, b.y + 4 + i * 7);
+        ctx.lineTo(b.x + 2.5, b.y + 4 + i * 7);
         ctx.stroke();
       }
-      // Meche
       ctx.strokeStyle = "#333";
       ctx.lineWidth = 1;
       ctx.beginPath();
