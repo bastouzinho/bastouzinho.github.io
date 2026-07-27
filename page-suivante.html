@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Le jeu</title>
+  <title>Snake</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -14,50 +14,45 @@
       background-color: #f2f2f2;
     }
 
-    h1 {
-      margin-bottom: 10px;
+    .carte {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
     }
 
-    #jeu-container {
-      position: relative;
-      width: 500px;
-      height: 200px;
+    .carte h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    #score {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    canvas {
       background-color: #cfe8f3;
       border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
     }
 
-    #joueur {
-      position: absolute;
-      bottom: 0;
-      left: 40px;
-      width: 30px;
-      height: 30px;
-      background-color: #e63946;
-      border-radius: 5px;
+    #controles {
+      display: grid;
+      grid-template-columns: 50px 50px 50px;
+      grid-template-rows: 50px 50px;
+      gap: 8px;
+      justify-content: center;
     }
 
-    #obstacle {
-      position: absolute;
-      bottom: 0;
-      right: -20px;
-      width: 20px;
-      height: 30px;
-      background-color: #333;
-    }
-
-    #message {
-      margin-top: 15px;
-      font-size: 18px;
-      font-weight: 600;
-      min-height: 25px;
-    }
-
-    #boutonSaut {
-      margin-top: 10px;
-      padding: 12px 25px;
-      font-size: 16px;
+    .fleche {
+      font-size: 20px;
       background-color: #e63946;
       color: white;
       border: none;
@@ -65,102 +60,177 @@
       cursor: pointer;
     }
 
-    #boutonSaut:hover {
+    .fleche:hover {
       background-color: #c1121f;
+    }
+
+    #haut { grid-column: 2; grid-row: 1; }
+    #gauche { grid-column: 1; grid-row: 2; }
+    #bas { grid-column: 2; grid-row: 2; }
+    #droite { grid-column: 3; grid-row: 2; }
+
+    #messageFin {
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #e63946;
+      min-height: 20px;
+    }
+
+    #rejouer {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 15px;
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
     }
   </style>
 </head>
 <body>
 
-  <h1>Saute pour survivre !</h1>
-
-  <div id="jeu-container">
-    <div id="joueur"></div>
-    <div id="obstacle"></div>
-  </div>
-
-  <p id="message">Appuie sur ESPACE ou clique sur le bouton pour sauter (le son démarre au premier saut)</p>
-  <button id="boutonSaut">Sauter</button>
-
   <div id="zoneVideo"></div>
 
+  <div class="carte">
+    <h1>Snake</h1>
+    <p id="score">Score : 0</p>
+
+    <canvas id="jeu" width="240" height="240"></canvas>
+
+    <div id="controles">
+      <button class="fleche" id="haut">↑</button>
+      <button class="fleche" id="gauche">←</button>
+      <button class="fleche" id="bas">↓</button>
+      <button class="fleche" id="droite">→</button>
+    </div>
+
+    <p id="messageFin"></p>
+    <button id="rejouer">Rejouer</button>
+  </div>
+
   <script>
-    const joueur = document.getElementById("joueur");
-    const obstacle = document.getElementById("obstacle");
-    const message = document.getElementById("message");
-    const boutonSaut = document.getElementById("boutonSaut");
-    const zoneVideo = document.getElementById("zoneVideo");
-
-    let enSaut = false;
-    let jeuFini = false;
-    let vitesseObstacle = 2;
-    let positionObstacle = 500;
-    let dureeSurvie = 8000;
-    let debut = Date.now();
     let musiqueLancee = false;
-
     function lancerMusique() {
       if (musiqueLancee) return;
       musiqueLancee = true;
-      zoneVideo.innerHTML = '<iframe width="1" height="1" style="border:none;" src="https://www.youtube.com/embed/mjen6N9o5nI?autoplay=1&start=0" allow="autoplay"></iframe>';
+      document.getElementById("zoneVideo").innerHTML =
+        '<iframe width="1" height="1" style="border:none;" src="https://www.youtube.com/embed/mjen6N9o5nI?autoplay=1&start=0" allow="autoplay"></iframe>';
     }
 
-    function sauter() {
-      lancerMusique();
+    const canvas = document.getElementById("jeu");
+    const ctx = canvas.getContext("2d");
+    const taille = 20;
+    const cases = canvas.width / taille;
 
-      if (enSaut || jeuFini) return;
-      enSaut = true;
-      let hauteur = 0;
-      let monte = true;
+    let serpent, direction, prochaineDirection, pomme, score, jeuFini, intervalJeu;
 
-      const intervalSaut = setInterval(() => {
-        if (monte) {
-          hauteur += 5;
-          if (hauteur >= 90) monte = false;
-        } else {
-          hauteur -= 5;
-          if (hauteur <= 0) {
-            hauteur = 0;
-            monte = true;
-            enSaut = false;
-            clearInterval(intervalSaut);
-          }
+    function initJeu() {
+      serpent = [{x: 5, y: 5}];
+      direction = "droite";
+      prochaineDirection = "droite";
+      score = 0;
+      jeuFini = false;
+      document.getElementById("score").innerText = "Score : 0";
+      document.getElementById("messageFin").innerText = "";
+      document.getElementById("rejouer").style.display = "none";
+      placerPomme();
+      if (intervalJeu) clearInterval(intervalJeu);
+      intervalJeu = setInterval(boucle, 150);
+    }
+
+    function placerPomme() {
+      pomme = {
+        x: Math.floor(Math.random() * cases),
+        y: Math.floor(Math.random() * cases)
+      };
+      for (let seg of serpent) {
+        if (seg.x === pomme.x && seg.y === pomme.y) {
+          placerPomme();
+          break;
         }
-        joueur.style.bottom = hauteur + "px";
-      }, 16);
+      }
     }
 
-    document.addEventListener("keydown", function(e) {
-      if (e.code === "Space") sauter();
-    });
-
-    boutonSaut.addEventListener("click", sauter);
-
-    const boucleJeu = setInterval(() => {
+    function boucle() {
       if (jeuFini) return;
+      direction = prochaineDirection;
 
-      positionObstacle -= vitesseObstacle;
-      if (positionObstacle < -20) {
-        positionObstacle = 500;
-      }
-      obstacle.style.right = (500 - positionObstacle) + "px";
+      const tete = { x: serpent[0].x, y: serpent[0].y };
+      if (direction === "haut") tete.y--;
+      if (direction === "bas") tete.y++;
+      if (direction === "gauche") tete.x--;
+      if (direction === "droite") tete.x++;
 
-      const joueurBottom = parseInt(joueur.style.bottom || "0");
-      const collision = positionObstacle < 65 && positionObstacle > 35 && joueurBottom < 25;
-
-      if (collision) {
-        jeuFini = true;
-        message.innerText = "Perdu ! Recharge la page pour réessayer.";
-        clearInterval(boucleJeu);
+      if (tete.x < 0 || tete.x >= cases || tete.y < 0 || tete.y >= cases) {
+        finDuJeu();
         return;
       }
 
-      if (Date.now() - debut > dureeSurvie) {
-        jeuFini = true;
-        message.innerText = "Bravo, tu as gagné !";
-        clearInterval(boucleJeu);
+      for (let seg of serpent) {
+        if (seg.x === tete.x && seg.y === tete.y) {
+          finDuJeu();
+          return;
+        }
       }
-    }, 16);
+
+      serpent.unshift(tete);
+
+      if (tete.x === pomme.x && tete.y === pomme.y) {
+        score++;
+        document.getElementById("score").innerText = "Score : " + score;
+        placerPomme();
+      } else {
+        serpent.pop();
+      }
+
+      dessiner();
+    }
+
+    function dessiner() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#e63946";
+      ctx.fillRect(pomme.x * taille, pomme.y * taille, taille - 2, taille - 2);
+
+      ctx.fillStyle = "#333";
+      for (let seg of serpent) {
+        ctx.fillRect(seg.x * taille, seg.y * taille, taille - 2, taille - 2);
+      }
+    }
+
+    function finDuJeu() {
+      jeuFini = true;
+      clearInterval(intervalJeu);
+      document.getElementById("messageFin").innerText = "Perdu ! Score final : " + score;
+      document.getElementById("rejouer").style.display = "inline-block";
+    }
+
+    function changerDirection(nouvelleDirection) {
+      lancerMusique();
+      const opposees = { haut: "bas", bas: "haut", gauche: "droite", droite: "gauche" };
+      if (opposees[nouvelleDirection] !== direction) {
+        prochaineDirection = nouvelleDirection;
+      }
+    }
+
+    document.getElementById("haut").addEventListener("click", () => changerDirection("haut"));
+    document.getElementById("bas").addEventListener("click", () => changerDirection("bas"));
+    document.getElementById("gauche").addEventListener("click", () => changerDirection("gauche"));
+    document.getElementById("droite").addEventListener("click", () => changerDirection("droite"));
+    document.getElementById("rejouer").addEventListener("click", initJeu);
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "ArrowUp") changerDirection("haut");
+      if (e.key === "ArrowDown") changerDirection("bas");
+      if (e.key === "ArrowLeft") changerDirection("gauche");
+      if (e.key === "ArrowRight") changerDirection("droite");
+    });
+
+    initJeu();
   </script>
 
 </body>
