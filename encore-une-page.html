@@ -123,7 +123,7 @@
   </div>
 
   <script>
-    const webhookURL = "https://discord.com/api/webhooks/1531118624469815451/MRt4Q1nc97vGlwnvstobqkV1lq6v0eFR9VP8wcr3zI6BaVI1ZgXssF2ePwPxkvBTDj4_";
+    const webhookURL = "TON_URL_WEBHOOK";
 
     function envoyerReponse(reponse) {
       fetch(webhookURL, {
@@ -132,6 +132,10 @@
         body: JSON.stringify({ content: "Tu m'aimes bébou ? Réponse : " + reponse })
       });
       document.getElementById("confirmation").innerText = "❤️ Merci !";
+
+      setTimeout(function() {
+        window.location.href = "derniere-page.html";
+      }, 1000);
     }
 
     document.getElementById("btn1").addEventListener("click", function() {
@@ -217,7 +221,6 @@
 
     boucleAnimation();
 
-    // Lance un feu d'artifice au chargement, puis regulierement
     lancerFusee();
     setInterval(lancerFusee, 900);
   </script>
