@@ -14,7 +14,6 @@
       font-family: 'Poppins', sans-serif;
       background-color: #f2f2f2;
     }
-
     .carte {
       display: flex;
       flex-direction: column;
@@ -25,27 +24,22 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       text-align: center;
     }
-
     .carte h1 {
       margin-top: 0;
       margin-bottom: 10px;
       font-size: 22px;
     }
-
     #score {
       font-size: 16px;
       margin-bottom: 15px;
       color: #333;
     }
-
     canvas {
-      background-color: #cfe8f3;
       border-radius: 10px;
       margin-bottom: 20px;
       touch-action: none;
       max-width: 90vw;
     }
-
     #controles {
       display: grid;
       grid-template-columns: 55px 55px 55px;
@@ -53,7 +47,6 @@
       gap: 8px;
       justify-content: center;
     }
-
     .fleche {
       font-size: 22px;
       background-color: #e63946;
@@ -62,16 +55,11 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
-    .fleche:hover {
-      background-color: #c1121f;
-    }
-
+    .fleche:hover { background-color: #c1121f; }
     #haut { grid-column: 2; grid-row: 1; }
     #gauche { grid-column: 1; grid-row: 2; }
     #bas { grid-column: 2; grid-row: 2; }
     #droite { grid-column: 3; grid-row: 2; }
-
     #messageFin {
       margin-top: 15px;
       font-size: 16px;
@@ -79,7 +67,6 @@
       color: #e63946;
       min-height: 20px;
     }
-
     #rejouer {
       display: none;
       margin-top: 10px;
@@ -92,7 +79,6 @@
       cursor: pointer;
       font-family: 'Poppins', sans-serif;
     }
-
     p.astuce {
       font-size: 13px;
       color: #777;
@@ -103,12 +89,12 @@
 </head>
 <body>
 
-  <div id="zoneVideo"></div>
+  <div id="lecteurYoutube" style="width:1px; height:1px; overflow:hidden; position:absolute;"></div>
 
   <div class="carte">
     <h1>Snake</h1>
     <p id="score">Score : 0</p>
-    <p class="astuce">Glisse ton doigt sur le plateau pour changer de direction</p>
+    <p class="astuce">Révèle la photo en te déplaçant !</p>
 
     <canvas id="jeu" width="360" height="360"></canvas>
 
@@ -123,13 +109,28 @@
     <button id="rejouer">Rejouer</button>
   </div>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
+    let player;
+    let apiPrete = false;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('lecteurYoutube', {
+        height: '1',
+        width: '1',
+        videoId: 'mjen6N9o5nI',
+        playerVars: { playsinline: 1 },
+        events: {
+          'onReady': function() { apiPrete = true; }
+        }
+      });
+    }
+
     let musiqueLancee = false;
     function lancerMusique() {
-      if (musiqueLancee) return;
+      if (musiqueLancee || !apiPrete) return;
       musiqueLancee = true;
-      document.getElementById("zoneVideo").innerHTML =
-        '<iframe width="1" height="1" style="border:none;" src="https://www.youtube.com/embed/mjen6N9o5nI?autoplay=1&start=0" allow="autoplay"></iframe>';
+      player.playVideo();
     }
 
     const canvas = document.getElementById("jeu");
@@ -137,7 +138,15 @@
     const taille = 20;
     const cases = canvas.width / taille;
 
-    let serpent, direction, prochaineDirection, pomme, score, jeuFini, intervalJeu;
+    const photo = new Image();
+    photo.src = "photo.jpg";
+    let photoChargee = false;
+    photo.onload = function() {
+      photoChargee = true;
+      dessiner();
+    };
+
+    let serpent, direction, prochaineDirection, pomme, score, jeuFini, intervalJeu, casesRevelees;
 
     function initJeu() {
       serpent = [{x: 5, y: 5}];
@@ -145,6 +154,7 @@
       prochaineDirection = "droite";
       score = 0;
       jeuFini = false;
+      casesRevelees = new Set();
       document.getElementById("score").innerText = "Score : 0";
       document.getElementById("messageFin").innerText = "";
       document.getElementById("rejouer").style.display = "none";
@@ -180,7 +190,6 @@
         finDuJeu();
         return;
       }
-
       for (let seg of serpent) {
         if (seg.x === tete.x && seg.y === tete.y) {
           finDuJeu();
@@ -198,18 +207,57 @@
         serpent.pop();
       }
 
+      for (let seg of serpent) {
+        casesRevelees.add(seg.x + "," + seg.y);
+      }
+
       dessiner();
+    }
+
+    function dessinerPhotoCover() {
+      const ratioCanvas = canvas.width / canvas.height;
+      const ratioImg = photo.width / photo.height;
+      let sx, sy, sw, sh;
+      if (ratioImg > ratioCanvas) {
+        sh = photo.height;
+        sw = sh * ratioCanvas;
+        sx = (photo.width - sw) / 2;
+        sy = 0;
+      } else {
+        sw = photo.width;
+        sh = sw / ratioCanvas;
+        sx = 0;
+        sy = (photo.height - sh) / 2;
+      }
+      ctx.drawImage(photo, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     }
 
     function dessiner() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      if (photoChargee) {
+        dessinerPhotoCover();
+      } else {
+        ctx.fillStyle = "#cfe8f3";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      ctx.fillStyle = "rgba(20, 20, 30, 0.93)";
+      for (let x = 0; x < cases; x++) {
+        for (let y = 0; y < cases; y++) {
+          if (!casesRevelees.has(x + "," + y)) {
+            ctx.fillRect(x * taille, y * taille, taille, taille);
+          }
+        }
+      }
+
       ctx.fillStyle = "#e63946";
       ctx.fillRect(pomme.x * taille, pomme.y * taille, taille - 2, taille - 2);
 
-      ctx.fillStyle = "#333";
       for (let seg of serpent) {
-        ctx.fillRect(seg.x * taille, seg.y * taille, taille - 2, taille - 2);
+        ctx.strokeStyle = "#e63946";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(seg.x * taille + 1, seg.y * taille + 1, taille - 4, taille - 4);
       }
     }
 
@@ -241,7 +289,6 @@
       if (e.key === "ArrowRight") changerDirection("droite");
     });
 
-    // Contrôle au doigt (swipe)
     let debutX = 0;
     let debutY = 0;
 
