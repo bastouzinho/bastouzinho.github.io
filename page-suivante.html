@@ -1,1 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Le jeu</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f2f2f2;
+    }
 
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #jeu-container {
+      position: relative;
+      width: 500px;
+      height: 200px;
+      background-color: #cfe8f3;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    #joueur {
+      position: absolute;
+      bottom: 0;
+      left: 40px;
+      width: 30px;
+      height: 30px;
+      background-color: #e63946;
+      border-radius: 5px;
+    }
+
+    #obstacle {
+      position: absolute;
+      bottom: 0;
+      right: -20px;
+      width: 20px;
+      height: 30px;
+      background-color: #333;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: 600;
+      min-height: 25px;
+    }
+
+    #boutonSaut {
+      margin-top: 10px;
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #e63946;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #boutonSaut:hover {
+      background-color: #c1121f;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Saute pour survivre !</h1>
+
+  <iframe width="0" height="0" style="border:none;" 
+    src="https://www.youtube.com/embed/8dEBapnnbCw?autoplay=1" 
+    allow="autoplay">
+  </iframe>
+
+  <div id="jeu-container">
+    <div id="joueur"></div>
+    <div id="obstacle"></div>
+  </div>
+
+  <p id="message">Appuie sur ESPACE ou clique sur le bouton pour sauter</p>
+  <button id="boutonSaut">Sauter</button>
+
+  <script>
+    const joueur = document.getElementById("joueur");
+    const obstacle = document.getElementById("obstacle");
+    const message = document.getElementById("message");
+    const boutonSaut = document.getElementById("boutonSaut");
+
+    let enSaut = false;
+    let jeuFini = false;
+    let vitesseObstacle = 3;
+    let positionObstacle = 500;
+    let dureeSurvie = 8000;
+    let debut = Date.now();
+
+    function sauter() {
+      if (enSaut || jeuFini) return;
+      enSaut = true;
+      let hauteur = 0;
+      let monte = true;
+
+      const intervalSaut = setInterval(() => {
+        if (monte) {
+          hauteur += 6;
+          if (hauteur >= 80) monte = false;
+        } else {
+          hauteur -= 6;
+          if (hauteur <= 0) {
+            hauteur = 0;
+            monte = true;
+            enSaut = false;
+            clearInterval(intervalSaut);
+          }
+        }
+        joueur.style.bottom = hauteur + "px";
+      }, 16);
+    }
+
+    document.addEventListener("keydown", function(e) {
+      if (e.code === "Space") sauter();
+    });
+
+    boutonSaut.addEventListener("click", sauter);
+
+    const boucleJeu = setInterval(() => {
+      if (jeuFini) return;
+
+      positionObstacle -= vitesseObstacle;
+      if (positionObstacle < -20) {
+        positionObstacle = 500;
+      }
+      obstacle.style.right = (500 - positionObstacle) + "px";
+
+      const joueurBottom = parseInt(joueur.style.bottom || "0");
+      const collision = positionObstacle < 70 && positionObstacle > 30 && joueurBottom < 30;
+
+      if (collision) {
+        jeuFini = true;
+        message.innerText = "Perdu ! Recharge la page pour réessayer.";
+        clearInterval(boucleJeu);
+        return;
+      }
+
+      if (Date.now() - debut > dureeSurvie) {
+        jeuFini = true;
+        message.innerText = "Bravo, tu as gagné !";
+        clearInterval(boucleJeu);
+      }
+    }, 16);
+  </script>
+
+</body>
+</html>
