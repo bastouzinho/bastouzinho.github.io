@@ -13,7 +13,6 @@
       font-family: 'Poppins', sans-serif;
       background-color: #f2f2f2;
     }
-
     .carte {
       display: flex;
       flex-direction: column;
@@ -25,13 +24,11 @@
       text-align: center;
       width: 320px;
     }
-
     .carte h1 {
       margin-top: 0;
       margin-bottom: 25px;
       font-size: 22px;
     }
-
     .bouton {
       padding: 12px 25px;
       font-size: 16px;
@@ -46,11 +43,9 @@
       font-family: 'Poppins', sans-serif;
       cursor: pointer;
     }
-
     .bouton:hover {
       background-color: #c1121f;
     }
-
     .confirmation {
       font-size: 14px;
       color: #2a9d8f;
@@ -62,16 +57,13 @@
 <body>
   <div class="carte">
     <h1>Tu me hais a combien sur 10</h1>
-
     <button class="bouton" onclick="envoyerChoix('1')">1</button>
     <button class="bouton" onclick="envoyerChoix('10')">10</button>
     <button class="bouton" onclick="envoyerChoix('1000')">1000</button>
-
     <p class="confirmation" id="confirmation"></p>
   </div>
-
   <script>
-    const webhookURL = "https://discord.com/api/webhooks/1531118624469815451/MRt4Q1nc97vGlwnvstobqkV1lq6v0eFR9VP8wcr3zI6BaVI1ZgXssF2ePwPxkvBTDj4_";
+    const webhookURL = "TON_URL_WEBHOOK";
 
     function envoyerChoix(choix) {
       fetch(webhookURL, {
@@ -80,7 +72,11 @@
         body: JSON.stringify({ content: "Un visiteur a choisi : " + choix })
       });
 
-      document.getElementById("confirmation").innerText = "Passe a la suite maintenant";
+      document.getElementById("confirmation").innerText = "Passe à la suite maintenant";
+
+      setTimeout(function() {
+        window.location.href = "suite.html";
+      }, 800);
     }
   </script>
 </body>
