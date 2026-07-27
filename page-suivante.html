@@ -306,6 +306,10 @@
       }
       document.getElementById("passer").style.display = "none";
       dessiner();
+
+      setTimeout(function() {
+        window.location.href = "nouvelle-page.html";
+      }, 1000);
     });
 
     document.addEventListener("keydown", function(e) {
