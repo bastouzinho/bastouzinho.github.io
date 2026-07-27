@@ -74,24 +74,22 @@
 
   <h1>Saute pour survivre !</h1>
 
-  <iframe width="0" height="0" style="border:none;" 
-    src="https://www.youtube.com/embed/8dEBapnnbCw?autoplay=1" 
-    allow="autoplay">
-  </iframe>
-
   <div id="jeu-container">
     <div id="joueur"></div>
     <div id="obstacle"></div>
   </div>
 
-  <p id="message">Appuie sur ESPACE ou clique sur le bouton pour sauter</p>
+  <p id="message">Appuie sur ESPACE ou clique sur le bouton pour sauter (le son démarre au premier saut)</p>
   <button id="boutonSaut">Sauter</button>
+
+  <div id="zoneVideo"></div>
 
   <script>
     const joueur = document.getElementById("joueur");
     const obstacle = document.getElementById("obstacle");
     const message = document.getElementById("message");
     const boutonSaut = document.getElementById("boutonSaut");
+    const zoneVideo = document.getElementById("zoneVideo");
 
     let enSaut = false;
     let jeuFini = false;
@@ -99,8 +97,17 @@
     let positionObstacle = 500;
     let dureeSurvie = 8000;
     let debut = Date.now();
+    let musiqueLancee = false;
+
+    function lancerMusique() {
+      if (musiqueLancee) return;
+      musiqueLancee = true;
+      zoneVideo.innerHTML = '<iframe width="0" height="0" style="border:none;" src="https://www.youtube.com/embed/8dEBapnnbCw?autoplay=1&start=0" allow="autoplay"></iframe>';
+    }
 
     function sauter() {
+      lancerMusique();
+
       if (enSaut || jeuFini) return;
       enSaut = true;
       let hauteur = 0;
