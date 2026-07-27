@@ -95,7 +95,11 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: message })
       });
-      document.getElementById("confirmation").innerText = "Merci, tes réponses ont bien été envoyées !";
+      document.getElementById("confirmation").innerText = "Merci, ta réponse ont bien été envoyées !";
+
+      setTimeout(function() {
+        window.location.href = "page-suivante.html";
+      }, 800);
     }
   </script>
 </body>
