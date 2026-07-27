@@ -2,13 +2,14 @@
 <html>
 <head>
   <title>Snake</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background-color: #f2f2f2;
@@ -19,7 +20,7 @@
       flex-direction: column;
       align-items: center;
       background-color: white;
-      padding: 30px;
+      padding: 25px;
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       text-align: center;
@@ -41,18 +42,20 @@
       background-color: #cfe8f3;
       border-radius: 10px;
       margin-bottom: 20px;
+      touch-action: none;
+      max-width: 90vw;
     }
 
     #controles {
       display: grid;
-      grid-template-columns: 50px 50px 50px;
-      grid-template-rows: 50px 50px;
+      grid-template-columns: 55px 55px 55px;
+      grid-template-rows: 55px 55px;
       gap: 8px;
       justify-content: center;
     }
 
     .fleche {
-      font-size: 20px;
+      font-size: 22px;
       background-color: #e63946;
       color: white;
       border: none;
@@ -89,6 +92,13 @@
       cursor: pointer;
       font-family: 'Poppins', sans-serif;
     }
+
+    p.astuce {
+      font-size: 13px;
+      color: #777;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
@@ -98,8 +108,9 @@
   <div class="carte">
     <h1>Snake</h1>
     <p id="score">Score : 0</p>
+    <p class="astuce">Glisse ton doigt sur le plateau pour changer de direction</p>
 
-    <canvas id="jeu" width="240" height="240"></canvas>
+    <canvas id="jeu" width="360" height="360"></canvas>
 
     <div id="controles">
       <button class="fleche" id="haut">↑</button>
@@ -228,6 +239,31 @@
       if (e.key === "ArrowDown") changerDirection("bas");
       if (e.key === "ArrowLeft") changerDirection("gauche");
       if (e.key === "ArrowRight") changerDirection("droite");
+    });
+
+    // Contrôle au doigt (swipe)
+    let debutX = 0;
+    let debutY = 0;
+
+    canvas.addEventListener("touchstart", function(e) {
+      lancerMusique();
+      debutX = e.touches[0].clientX;
+      debutY = e.touches[0].clientY;
+    });
+
+    canvas.addEventListener("touchend", function(e) {
+      const finX = e.changedTouches[0].clientX;
+      const finY = e.changedTouches[0].clientY;
+      const diffX = finX - debutX;
+      const diffY = finY - debutY;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 20) changerDirection("droite");
+        else if (diffX < -20) changerDirection("gauche");
+      } else {
+        if (diffY > 20) changerDirection("bas");
+        else if (diffY < -20) changerDirection("haut");
+      }
     });
 
     initJeu();
