@@ -275,6 +275,10 @@
       });
       document.getElementById("confirmation").innerText = "Merci pour ta réponse !";
       document.getElementById("reponses").classList.remove("visible");
+
+      setTimeout(function() {
+        window.location.href = "encore-une-page.html";
+      }, 1000);
     }
 
     document.getElementById("btnOui").addEventListener("click", function() {
