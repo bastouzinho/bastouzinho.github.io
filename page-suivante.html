@@ -93,7 +93,7 @@
 
     let enSaut = false;
     let jeuFini = false;
-    let vitesseObstacle = 3;
+    let vitesseObstacle = 2;
     let positionObstacle = 500;
     let dureeSurvie = 8000;
     let debut = Date.now();
@@ -102,7 +102,7 @@
     function lancerMusique() {
       if (musiqueLancee) return;
       musiqueLancee = true;
-      zoneVideo.innerHTML = '<iframe width="0" height="0" style="border:none;" src="https://www.youtube.com/embed/8dEBapnnbCw?autoplay=1&start=0" allow="autoplay"></iframe>';
+      zoneVideo.innerHTML = '<iframe width="1" height="1" style="border:none;" src="https://www.youtube.com/embed/mjen6N9o5nI?autoplay=1&start=0" allow="autoplay"></iframe>';
     }
 
     function sauter() {
@@ -115,10 +115,10 @@
 
       const intervalSaut = setInterval(() => {
         if (monte) {
-          hauteur += 6;
-          if (hauteur >= 80) monte = false;
+          hauteur += 5;
+          if (hauteur >= 90) monte = false;
         } else {
-          hauteur -= 6;
+          hauteur -= 5;
           if (hauteur <= 0) {
             hauteur = 0;
             monte = true;
@@ -146,7 +146,7 @@
       obstacle.style.right = (500 - positionObstacle) + "px";
 
       const joueurBottom = parseInt(joueur.style.bottom || "0");
-      const collision = positionObstacle < 70 && positionObstacle > 30 && joueurBottom < 30;
+      const collision = positionObstacle < 65 && positionObstacle > 35 && joueurBottom < 25;
 
       if (collision) {
         jeuFini = true;
