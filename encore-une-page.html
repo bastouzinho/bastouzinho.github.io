@@ -1,1 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Joyeux Anniversaire</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffb8d1;
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('R.png');
+      background-repeat: repeat;
+      background-size: 90px 90px;
+      opacity: 0.3;
+      -webkit-mask-image: conic-gradient(#000 90deg, transparent 90deg 180deg, #000 180deg 270deg, transparent 270deg 360deg);
+      mask-image: conic-gradient(#000 90deg, transparent 90deg 180deg, #000 180deg 270deg, transparent 270deg 360deg);
+      -webkit-mask-size: 180px 180px;
+      mask-size: 180px 180px;
+      z-index: -1;
+    }
+
+    canvas#feux {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .carte {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgba(255,255,255,0.9);
+      padding: 35px 25px;
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      text-align: center;
+      width: 320px;
+      box-sizing: border-box;
+    }
+
+    .titre {
+      font-family: 'Pacifico', cursive;
+      font-size: 30px;
+      color: #d6336c;
+      line-height: 1.4;
+      margin: 0 0 25px 0;
+      text-shadow: 1px 1px 0 #fff, 2px 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .question {
+      font-size: 16px;
+      color: #444;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    #reponses {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .bouton-reponse {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      background-color: #e63946;
+    }
+
+    .bouton-reponse:hover {
+      background-color: #c1121f;
+    }
+
+    #confirmation {
+      font-size: 14px;
+      color: #2a9d8f;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="feux"></canvas>
+
+  <div class="carte">
+    <h1 class="titre">JOYEUX<br>ANNIVERSAIRE<br>SHAÏNYS 🎉</h1>
+
+    <p class="question">Tu m'aimes bébou ?</p>
+    <div id="reponses">
+      <button class="bouton-reponse" id="btn1">Oui</button>
+      <button class="bouton-reponse" id="btn2">Oui</button>
+    </div>
+
+    <p id="confirmation"></p>
+  </div>
+
+  <script>
+    const webhookURL = "TON_URL_WEBHOOK";
+
+    function envoyerReponse(reponse) {
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: "Tu m'aimes bébou ? Réponse : " + reponse })
+      });
+      document.getElementById("confirmation").innerText = "❤️ Merci !";
+    }
+
+    document.getElementById("btn1").addEventListener("click", function() {
+      envoyerReponse("Oui");
+    });
+    document.getElementById("btn2").addEventListener("click", function() {
+      envoyerReponse("Oui (encore)");
+    });
+
+    // ----- Feux d'artifice -----
+    const canvas = document.getElementById("feux");
+    const ctx = canvas.getContext("2d");
+
+    function redimensionner() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    redimensionner();
+    window.addEventListener("resize", redimensionner);
+
+    const couleurs = ["#e63946", "#f78fb3", "#ffb700", "#2a9d8f", "#a663cc", "#4cc9f0"];
+    let particules = [];
+
+    function creerExplosion(x, y) {
+      const couleur = couleurs[Math.floor(Math.random() * couleurs.length)];
+      const nbParticules = 45;
+      for (let i = 0; i < nbParticules; i++) {
+        const angle = (Math.PI * 2 * i) / nbParticules;
+        const vitesse = 2 + Math.random() * 3;
+        particules.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * vitesse,
+          vy: Math.sin(angle) * vitesse,
+          vie: 60 + Math.random() * 20,
+          age: 0,
+          couleur: couleur
+        });
+      }
+    }
+
+    function lancerFusee() {
+      const x = Math.random() * canvas.width;
+      const yDepart = canvas.height;
+      const yCible = canvas.height * (0.15 + Math.random() * 0.35);
+
+      let fusee = { x: x, y: yDepart, cible: yCible };
+      const intervalFusee = setInterval(() => {
+        fusee.y -= 9;
+        if (fusee.y <= fusee.cible) {
+          clearInterval(intervalFusee);
+          creerExplosion(fusee.x, fusee.y);
+        }
+      }, 16);
+    }
+
+    function boucleAnimation() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = particules.length - 1; i >= 0; i--) {
+        const p = particules[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05;
+        p.age++;
+
+        const opacite = 1 - p.age / p.vie;
+        if (opacite <= 0) {
+          particules.splice(i, 1);
+          continue;
+        }
+
+        ctx.globalAlpha = opacite;
+        ctx.fillStyle = p.couleur;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      requestAnimationFrame(boucleAnimation);
+    }
+
+    boucleAnimation();
+
+    // Lance un feu d'artifice au chargement, puis regulierement
+    lancerFusee();
+    setInterval(lancerFusee, 900);
+  </script>
+
+</body>
+</html>
