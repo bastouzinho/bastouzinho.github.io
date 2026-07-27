@@ -1,1 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anniversaire</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffb8d1;
+      position: relative;
+    }
 
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('R.png');
+      background-repeat: repeat;
+      background-size: 90px 90px;
+      opacity: 0.3;
+      -webkit-mask-image: conic-gradient(#000 90deg, transparent 90deg 180deg, #000 180deg 270deg, transparent 270deg 360deg);
+      mask-image: conic-gradient(#000 90deg, transparent 90deg 180deg, #000 180deg 270deg, transparent 270deg 360deg);
+      -webkit-mask-size: 180px 180px;
+      mask-size: 180px 180px;
+      z-index: -1;
+    }
+
+    .carte {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .carte h1 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      font-size: 20px;
+    }
+
+    #score {
+      font-size: 15px;
+      margin-bottom: 10px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    p.astuce {
+      font-size: 13px;
+      color: #777;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      border-radius: 10px;
+      touch-action: none;
+      max-width: 90vw;
+      background: radial-gradient(ellipse at center, #2b2b4a 0%, #14142a 100%);
+      display: block;
+    }
+
+    #messageFin {
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #d6336c;
+      min-height: 24px;
+    }
+
+    #rejouer {
+      display: none;
+      margin-top: 8px;
+      padding: 10px 20px;
+      font-size: 15px;
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="lecteurYoutube" style="width:1px; height:1px; overflow:hidden; position:absolute;"></div>
+
+  <div class="carte">
+    <h1>Allume les 17 bougies 🎂</h1>
+    <p id="score">0 / 17 allumées</p>
+    <p class="astuce">Fais glisser ton doigt vers le haut sur l'écran pour lancer du feu</p>
+
+    <canvas id="jeu" width="340" height="480"></canvas>
+
+    <p id="messageFin"></p>
+    <button id="rejouer">Rejouer</button>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    let player;
+    let apiPrete = false;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('lecteurYoutube', {
+        height: '1',
+        width: '1',
+        videoId: 'mjen6N9o5nI',
+        playerVars: { playsinline: 1 },
+        events: { 'onReady': function() { apiPrete = true; } }
+      });
+    }
+
+    let musiqueLancee = false;
+    function lancerMusique() {
+      if (musiqueLancee || !apiPrete) return;
+      musiqueLancee = true;
+      player.playVideo();
+    }
+
+    const canvas = document.getElementById("jeu");
+    const ctx = canvas.getContext("2d");
+
+    // ----- Position des 17 bougies sur le gâteau -----
+    const nbBougies = 17;
+    const bougies = [];
+    const margeX = 55;
+    const largeurZone = canvas.width - margeX * 2;
+    for (let i = 0; i < nbBougies; i++) {
+      bougies.push({
+        x: margeX + (largeurZone / (nbBougies - 1)) * i,
+        y: 150 + Math.sin(i * 0.9) * 8,
+        allumee: false
+      });
+    }
+
+    const launcher = { x: canvas.width / 2, y: canvas.height - 40 };
+    let fireballs = [];
+    let gravite = 0.18;
+    let nbAllumees = 0;
+    let jeuGagne = false;
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const touch = e.changedTouches ? e.changedTouches[0] : e;
+      return {
+        x: (touch.clientX - rect.left) * scaleX,
+        y: (touch.clientY - rect.top) * scaleY
+      };
+    }
+
+    let debutSwipe = null;
+
+    canvas.addEventListener("touchstart", function(e) {
+      lancerMusique();
+      debutSwipe = getPos(e);
+    });
+
+    canvas.addEventListener("touchend", function(e) {
+      if (!debutSwipe || jeuGagne) return;
+      const fin = getPos(e);
+      const dx = fin.x - debutSwipe.x;
+      const dy = fin.y - debutSwipe.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 15 && dy < 0) {
+        let vx = dx * 0.16;
+        let vy = dy * 0.16;
+        const vitesseMax = 13;
+        const vitesse = Math.sqrt(vx * vx + vy * vy);
+        if (vitesse > vitesseMax) {
+          vx = (vx / vitesse) * vitesseMax;
+          vy = (vy / vitesse) * vitesseMax;
+        }
+        fireballs.push({
+          x: launcher.x,
+          y: launcher.y,
+          vx: vx,
+          vy: vy,
+          trainee: []
+        });
+      }
+      debutSwipe = null;
+    });
+
+    // Souris pour tester sur ordinateur
+    let sourisDebut = null;
+    canvas.addEventListener("mousedown", function(e) {
+      lancerMusique();
+      const rect = canvas.getBoundingClientRect();
+      sourisDebut = {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+      };
+    });
+    canvas.addEventListener("mouseup", function(e) {
+      if (!sourisDebut || jeuGagne) return;
+      const rect = canvas.getBoundingClientRect();
+      const fin = {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+      };
+      const dx = fin.x - sourisDebut.x;
+      const dy = fin.y - sourisDebut.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 15 && dy < 0) {
+        let vx = dx * 0.16;
+        let vy = dy * 0.16;
+        const vitesseMax = 13;
+        const vitesse = Math.sqrt(vx * vx + vy * vy);
+        if (vitesse > vitesseMax) {
+          vx = (vx / vitesse) * vitesseMax;
+          vy = (vy / vitesse) * vitesseMax;
+        }
+        fireballs.push({ x: launcher.x, y: launcher.y, vx, vy, trainee: [] });
+      }
+      sourisDebut = null;
+    });
+
+    function dessinerGateau() {
+      // Assiette
+      ctx.fillStyle = "#e8d5f0";
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, 250, 130, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Etage du bas
+      ctx.fillStyle = "#c97b4a";
+      ctx.fillRect(canvas.width / 2 - 110, 210, 220, 45);
+
+      // Etage du milieu
+      ctx.fillStyle = "#e0995f";
+      ctx.fillRect(canvas.width / 2 - 85, 180, 170, 40);
+
+      // Nappage blanc ondule en haut
+      ctx.fillStyle = "#fff5f8";
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2 - 90, 180);
+      for (let x = -90; x <= 90; x += 15) {
+        ctx.quadraticCurveTo(
+          canvas.width / 2 + x + 7.5, 170,
+          canvas.width / 2 + x + 15, 180
+        );
+      }
+      ctx.lineTo(canvas.width / 2 + 90, 195);
+      ctx.lineTo(canvas.width / 2 - 90, 195);
+      ctx.closePath();
+      ctx.fill();
+
+      // Petites decorations
+      ctx.fillStyle = "#f78fb3";
+      for (let i = -95; i <= 95; i += 20) {
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2 + i, 225, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function dessinerBougie(b) {
+      // Baton de bougie
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(b.x - 2.5, b.y, 5, 25);
+      ctx.strokeStyle = "#f78fb3";
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(b.x - 2.5, b.y + 5 + i * 8);
+        ctx.lineTo(b.x + 2.5, b.y + 5 + i * 8);
+        ctx.stroke();
+      }
+      // Meche
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x, b.y - 5);
+      ctx.stroke();
+
+      if (b.allumee) {
+        const flicker = Math.sin(Date.now() / 80 + b.x) * 1.5;
+        const grad = ctx.createRadialGradient(b.x, b.y - 10, 1, b.x, b.y - 10, 12);
+        grad.addColorStop(0, "rgba(255,255,200,0.9)");
+        grad.addColorStop(1, "rgba(255,180,60,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y - 10, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffb700";
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y - 14 - flicker);
+        ctx.quadraticCurveTo(b.x + 5, b.y - 6, b.x, b.y - 2);
+        ctx.quadraticCurveTo(b.x - 5, b.y - 6, b.x, b.y - 14 - flicker);
+        ctx.fill();
+
+        ctx.fillStyle = "#fff5c0";
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y - 10 - flicker);
+        ctx.quadraticCurveTo(b.x + 2.5, b.y - 6, b.x, b.y - 3);
+        ctx.quadraticCurveTo(b.x - 2.5, b.y - 6, b.x, b.y - 10 - flicker);
+        ctx.fill();
+      }
+    }
+
+    function dessinerLanceur() {
+      ctx.fillStyle = "#e63946";
+      ctx.beginPath();
+      ctx.arc(launcher.x, launcher.y, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffb700";
+      ctx.beginPath();
+      ctx.arc(launcher.x, launcher.y - 3, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function dessinerFireball(f) {
+      for (let i = 0; i < f.trainee.length; i++) {
+        const t = f.trainee[i];
+        ctx.globalAlpha = i / f.trainee.length * 0.5;
+        ctx.fillStyle = "#ff7b00";
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      const grad = ctx.createRadialGradient(f.x, f.y, 1, f.x, f.y, 10);
+      grad.addColorStop(0, "#fff5c0");
+      grad.addColorStop(0.5, "#ffb700");
+      grad.addColorStop(1, "rgba(255,90,0,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function boucle() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      dessinerGateau();
+      for (let b of bougies) dessinerBougie(b);
+      dessinerLanceur();
+
+      for (let i = fireballs.length - 1; i >= 0; i--) {
+        const f = fireballs[i];
+        f.trainee.push({ x: f.x, y: f.y });
+        if (f.trainee.length > 6) f.trainee.shift();
+
+        f.x += f.vx;
+        f.y += f.vy;
+        f.vy += gravite;
+
+        let touche = false;
+        for (let b of bougies) {
+          if (!b.allumee) {
+            const d = Math.hypot(f.x - b.x, f.y - (b.y - 8));
+            if (d < 16) {
+              b.allumee = true;
+              nbAllumees++;
+              document.getElementById("score").innerText = nbAllumees + " / 17 allumées";
+              touche = true;
+              break;
+            }
+          }
+        }
+
+        if (touche || f.x < 0 || f.x > canvas.width || f.y > canvas.height || f.y < -20) {
+          fireballs.splice(i, 1);
+          continue;
+        }
+
+        dessinerFireball(f);
+      }
+
+      if (nbAllumees === nbBougies && !jeuGagne) {
+        jeuGagne = true;
+        document.getElementById("messageFin").innerText = "Joyeux Anniversaire ! 🎉🎂";
+        document.getElementById("rejouer").style.display = "inline-block";
+      }
+
+      requestAnimationFrame(boucle);
+    }
+
+    document.getElementById("rejouer").addEventListener("click", function() {
+      for (let b of bougies) b.allumee = false;
+      fireballs = [];
+      nbAllumees = 0;
+      jeuGagne = false;
+      document.getElementById("score").innerText = "0 / 17 allumées";
+      document.getElementById("messageFin").innerText = "";
+      document.getElementById("rejouer").style.display = "none";
+    });
+
+    boucle();
+  </script>
+
+</body>
+</html>
