@@ -109,7 +109,7 @@
     <canvas id="jeu" width="360" height="480"></canvas>
 
     <p id="messageFin"></p>
-    <button id="rejouer">Rejouer</button>
+    <button id="rejouer">Prochaine Question</button>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -137,12 +137,10 @@
     const canvas = document.getElementById("jeu");
     const ctx = canvas.getContext("2d");
 
-    // ----- Position des 17 bougies sur le gateau, sur 2 rangees en quinconce -----
     const nbBougies = 17;
     const bougies = [];
     const centreX = canvas.width / 2;
 
-    // Rangee arriere (plus haute, un peu plus resserree) : 8 bougies
     const arriere = 8;
     const largeurArriere = 190;
     for (let i = 0; i < arriere; i++) {
@@ -153,7 +151,6 @@
       });
     }
 
-    // Rangee avant (plus basse, plus large) : 9 bougies
     const avant = nbBougies - arriere;
     const largeurAvant = 210;
     for (let i = 0; i < avant; i++) {
@@ -249,21 +246,17 @@
     });
 
     function dessinerGateau() {
-      // Assiette
       ctx.fillStyle = "#e8d5f0";
       ctx.beginPath();
       ctx.ellipse(canvas.width / 2, 270, 150, 15, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Etage du bas
       ctx.fillStyle = "#c97b4a";
       ctx.fillRect(canvas.width / 2 - 130, 225, 260, 48);
 
-      // Etage du milieu
       ctx.fillStyle = "#e0995f";
       ctx.fillRect(canvas.width / 2 - 100, 195, 200, 42);
 
-      // Nappage blanc ondule en haut
       ctx.fillStyle = "#fff5f8";
       ctx.beginPath();
       ctx.moveTo(centreX - 105, 195);
@@ -278,7 +271,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // Petites decorations sur l'etage du bas
       ctx.fillStyle = "#f78fb3";
       for (let i = -110; i <= 110; i += 20) {
         ctx.beginPath();
@@ -411,13 +403,7 @@
     }
 
     document.getElementById("rejouer").addEventListener("click", function() {
-      for (let b of bougies) b.allumee = false;
-      fireballs = [];
-      nbAllumees = 0;
-      jeuGagne = false;
-      document.getElementById("score").innerText = "0 / 17 allumées";
-      document.getElementById("messageFin").innerText = "";
-      document.getElementById("rejouer").style.display = "none";
+      window.location.href = "prochaine-page.html";
     });
 
     boucle();
