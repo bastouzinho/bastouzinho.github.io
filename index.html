@@ -1,39 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pour mon ex <3 </title>
+  <title>Mon site</title>
   <style>
     body {
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
-      text-align: center;
       font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    .carte {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    .carte h1 {
+      margin-top: 0;
+      margin-bottom: 25px;
+      font-size: 24px;
     }
 
     .bouton {
       padding: 15px 30px;
       font-size: 18px;
       background-color: #e63946;
-      color: lavender;
+      color: white;
       text-decoration: none;
       border-radius: 8px;
     }
 
     .bouton:hover {
-      background-color: #D3D3FF;
+      background-color: #c1121f;
     }
   </style>
 </head>
 <body>
-  <h1>Clique dessus si je suis ton ex adore <3 </h1>
-  <a href="contact.html" class="bouton">Aller clique mv</a>
+  <div class="carte">
+    <h1>Bienvenue sur mon site</h1>
+    <a href="contact.html" class="bouton">Aller à la page contact</a>
+  </div>
 </body>
 </html>
