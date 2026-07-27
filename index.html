@@ -5,13 +5,58 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background-color: #f2f2f2;
+    }
+
+    .bandeau-anniv {
+      position: relative;
+      width: 100%;
+      background-color: #ffc0d9;
+      overflow: hidden;
+      padding: 25px 15px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .bandeau-anniv h2 {
+      position: relative;
+      z-index: 2;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: #d6336c;
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 0 white;
+    }
+
+    .motif-chats {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      z-index: 1;
+      opacity: 0.35;
+    }
+
+    .chat-icone {
+      font-size: 28px;
+      margin: 6px 10px;
+      color: #e05a94;
+      transform: rotate(var(--angle, 0deg));
+    }
+
+    .zone-contenu {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 110px);
+      padding: 20px 0;
     }
 
     .carte {
@@ -25,13 +70,11 @@
       text-align: center;
       width: 300px;
     }
-
     .carte h1 {
       margin-top: 0;
       margin-bottom: 25px;
       font-size: 24px;
     }
-
     .bouton {
       padding: 15px 30px;
       font-size: 18px;
@@ -42,16 +85,37 @@
       display: inline-block;
       font-family: 'Poppins', sans-serif;
     }
-
     .bouton:hover {
       background-color: #c1121f;
     }
   </style>
 </head>
 <body>
-  <div class="carte">
-    <h1>Clique si je suis le meilleur ex du monde <3 </h1>
-    <a href="contact.html" class="bouton">Clique (je sais mv) </a>
+
+  <div class="bandeau-anniv">
+    <div class="motif-chats">
+      <span class="chat-icone" style="--angle:-10deg;">🐱</span>
+      <span class="chat-icone" style="--angle:8deg;">🎀</span>
+      <span class="chat-icone" style="--angle:-5deg;">🐱</span>
+      <span class="chat-icone" style="--angle:12deg;">🐱</span>
+      <span class="chat-icone" style="--angle:-8deg;">🎀</span>
+      <span class="chat-icone" style="--angle:6deg;">🐱</span>
+      <span class="chat-icone" style="--angle:-12deg;">🐱</span>
+      <span class="chat-icone" style="--angle:10deg;">🎀</span>
+      <span class="chat-icone" style="--angle:-6deg;">🐱</span>
+      <span class="chat-icone" style="--angle:9deg;">🐱</span>
+      <span class="chat-icone" style="--angle:-9deg;">🎀</span>
+      <span class="chat-icone" style="--angle:5deg;">🐱</span>
+    </div>
+    <h2>HAPPY BIRTHDAY SHAÏNYS</h2>
   </div>
+
+  <div class="zone-contenu">
+    <div class="carte">
+      <h1>Clique si je suis le meilleur ex du monde <3 </h1>
+      <a href="contact.html" class="bouton">Clique (je sais mv) </a>
+    </div>
+  </div>
+
 </body>
 </html>
